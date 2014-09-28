@@ -56,6 +56,19 @@ var Database = function(localName, remoteDb, syncOptions) {
         );
     };
 
+    self.addCard = function(text, cb) {
+        // TODO: Generate an ID that includes the project name
+        // so that the allDocs index can be used for filtering
+        // by project..
+        var id = 'card_' + new Date().getTime().toString();
+        pouch.put({ text: text }, id, function(err) {
+            if (err) {
+                self.emit('error', err);
+            }
+            cb(err);
+        });
+    };
+
     return self;
 };
 

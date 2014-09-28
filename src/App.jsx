@@ -1,9 +1,11 @@
 var React = require('react');
+var _ = require('lodash');
 var CardList = require('./CardList.jsx');
+var CardForm = require('./CardForm.jsx');
 
 var App = React.createClass({
     getInitialState: function() {
-        return { cards: [] };
+        return { cards: [], draftText: '' };
     },
 
     componentDidMount: function() {
@@ -16,9 +18,30 @@ var App = React.createClass({
         }.bind(this));
     },
 
+    createCard: function(text) {
+        this.updateDraftText(text);
+        this.props.db.addCard(text, function(err) {
+            if (!err) {
+                this.updateDraftText();
+            }
+        }.bind(this));
+    },
+
+    updateDraftText: function(text) {
+        // React will only update the DOM value if it is an empty
+        // string, not null or undefined;
+        text = text || '';
+        this.setState(_.extend(this.state, { draftText: text }));
+    },
+
     render: function() {
         return (
-            <CardList data={this.state.cards} />
+            <div>
+                <CardList data={this.state.cards} />
+                <CardForm draftText={this.state.draftText}
+                          onChange={this.updateDraftText}
+                          onSubmit={this.createCard} />
+            </div>
         );
     }
 });
