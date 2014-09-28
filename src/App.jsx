@@ -2,6 +2,7 @@ var React = require('react');
 var _ = require('lodash');
 var CardList = require('./CardList.jsx');
 var CardForm = require('./CardForm.jsx');
+var DatabaseDestroyer = require('./DatabaseDestroyer.jsx');
 
 var App = React.createClass({
     getInitialState: function() {
@@ -34,6 +35,10 @@ var App = React.createClass({
         this.setState(_.extend(this.state, { draftText: text }));
     },
 
+    destroyLocalDatabase: function() {
+        this.props.db.destroy();
+    },
+
     render: function() {
         return (
             <div>
@@ -41,6 +46,8 @@ var App = React.createClass({
                 <CardForm draftText={this.state.draftText}
                           onChange={this.updateDraftText}
                           onSubmit={this.createCard} />
+                <DatabaseDestroyer
+                    onSubmit={this.destroyLocalDatabase} />
             </div>
         );
     }

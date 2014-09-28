@@ -69,6 +69,10 @@ var Database = function(localName, remoteDb, syncOptions) {
         });
     };
 
+    self.destroy = function() {
+        pouch.destroy();
+    };
+
     return self;
 };
 
