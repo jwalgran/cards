@@ -6,7 +6,7 @@ var DatabaseDestroyer = require('./DatabaseDestroyer.jsx');
 
 var App = React.createClass({
     getInitialState: function() {
-        return { cards: [], draftText: '' };
+        return { cards: [], draft: { text: '', points: '' } };
     },
 
     componentDidMount: function() {
@@ -19,20 +19,26 @@ var App = React.createClass({
         }.bind(this));
     },
 
-    createCard: function(text) {
-        this.updateDraftText(text);
-        this.props.db.addCard(text, function(err) {
+    createCard: function(text, points) {
+        this.updateDraft(text, points);
+        this.props.db.addCard(text, points, function(err) {
             if (!err) {
-                this.updateDraftText();
+                this.updateDraft();
             }
         }.bind(this));
     },
 
-    updateDraftText: function(text) {
+    updateDraft: function(text, points) {
         // React will only update the DOM value if it is an empty
         // string, not null or undefined;
         text = text || '';
-        this.setState(_.extend(this.state, { draftText: text }));
+        points = isNaN(points) ? '' : points;
+        this.setState(_.extend(this.state, {
+            draft: {
+                text: text,
+                points: points
+            }
+        }));
     },
 
     destroyLocalDatabase: function() {
@@ -43,8 +49,8 @@ var App = React.createClass({
         return (
             <div>
                 <CardList data={this.state.cards} />
-                <CardForm draftText={this.state.draftText}
-                          onChange={this.updateDraftText}
+                <CardForm draft={this.state.draft}
+                          onChange={this.updateDraft}
                           onSubmit={this.createCard} />
                 <DatabaseDestroyer
                     onSubmit={this.destroyLocalDatabase} />

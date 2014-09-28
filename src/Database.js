@@ -23,6 +23,25 @@ var Database = function(localName, remoteDb, syncOptions) {
         });
     };
 
+    function validateCard(card) {
+        if (!card) {
+            return { card: 'Falsy card' };
+        };
+        if (!card.text) {
+            return { text: 'Missing text' };
+        }
+        if (card.text.trim && !card.text.trim()) {
+            return { text: 'Empty text' };
+        }
+        if (card.points === undefined) {
+            return { points: 'Missing points' };
+        }
+        if (isNaN(card.points)) {
+            return { points: 'Points is not a number' };
+        }
+        return undefined; // No validation failure messages
+    };
+
     if (remoteDb) {
         var opts = syncOptions ||  { live: true };
         pouch.replicate.to(remoteDb, opts);
@@ -56,12 +75,18 @@ var Database = function(localName, remoteDb, syncOptions) {
         );
     };
 
-    self.addCard = function(text, cb) {
+    self.addCard = function(text, points, cb) {
         // TODO: Generate an ID that includes the project name
         // so that the allDocs index can be used for filtering
         // by project..
         var id = 'card_' + new Date().getTime().toString();
-        pouch.put({ text: text }, id, function(err) {
+        var card = { text: text, points: points };
+        var failures = validateCard(card); 
+        if (failures) {
+            cb(failures);
+            return;
+        }
+        pouch.put(card, id, function(err) {
             if (err) {
                 self.emit('error', err);
             }
