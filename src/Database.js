@@ -7,12 +7,14 @@ var Database = function(localName, remoteDb, syncOptions) {
     EventEmitter.call(this);
     var self = this;
     var pouch = new PouchDB(localName);
+    var cardPrefix = 'card_';
 
-    function allDocsAsArray(cb, eb) {
-        pouch.allDocs({
-            include_docs: true,
-            descending: true
-        }, function(err, results) {
+    function allDocsAsArray(opts, cb, eb) {
+        var defaults = {
+            descending: true,
+            include_docs: true
+        };
+        pouch.allDocs(_.extend(defaults, opts), function(err, results) {
             if (!err) {
                 cb(_.map(results.rows, function(row) {
                     return row.doc;
@@ -21,6 +23,15 @@ var Database = function(localName, remoteDb, syncOptions) {
                 eb(err);
             }
         });
+    };
+
+    function allCardsAsArray(cb, eb) {
+        allDocsAsArray({
+            // Reverse keys because descending: true
+            startkey: cardPrefix + '\uffff',
+            endkey: cardPrefix,
+            descending: true
+        }, cb, eb);
     };
 
     function validateCard(card) {
@@ -53,7 +64,7 @@ var Database = function(localName, remoteDb, syncOptions) {
             since: info.update_seq,
             live: true
         }).on('change', function() {
-            allDocsAsArray(
+            allCardsAsArray(
                 function(docs) {
                     self.emit('update', docs);
                 },
@@ -65,7 +76,7 @@ var Database = function(localName, remoteDb, syncOptions) {
     });
 
     self.allCards = function(cb) {
-        allDocsAsArray(
+        allCardsAsArray(
             function(docs) {
                 cb(null, docs);
             },
@@ -79,7 +90,7 @@ var Database = function(localName, remoteDb, syncOptions) {
         // TODO: Generate an ID that includes the project name
         // so that the allDocs index can be used for filtering
         // by project..
-        var id = 'card_' + new Date().getTime().toString();
+        var id = cardPrefix + new Date().getTime().toString();
         var card = { text: text, points: points };
         var failures = validateCard(card); 
         if (failures) {
