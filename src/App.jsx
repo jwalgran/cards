@@ -21,7 +21,7 @@ var App = React.createClass({
 
     createCard: function(text, points) {
         this.updateDraft(text, points);
-        this.props.db.addCard(text, points, function(err) {
+        this.props.db.addCard({text: text, points: points}, function(err) {
             if (!err) {
                 this.updateDraft();
             }
