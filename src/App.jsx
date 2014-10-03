@@ -54,7 +54,8 @@ var App = React.createClass({
     render: function() {
         return (
             <div>
-                <CardList data={this.state.cards} />
+                <CardList data={this.state.cards}
+                          projects={this.state.projects} />
                 <CardForm draft={this.state.draft}
                           projects={this.state.projects}
                           onChange={this.updateDraft}

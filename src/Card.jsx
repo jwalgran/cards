@@ -6,7 +6,7 @@ var Card = React.createClass({
             <div className="card">
                 <div className="card-text">{this.props.text}</div>
                 <div className="card-points">{this.props.points}</div>
-                <div className="card-project">{this.props.project}</div>
+                <div className="card-project">{this.props.project.name}</div>
             </div>
         );
     }
