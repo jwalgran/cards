@@ -6,7 +6,7 @@ var CardList = React.createClass({
     render: function() {
         var cardNodes = _.map(this.props.data, function(card) {
             return (
-                <Card key={card._id} text={card.text} points={card.points} />
+                <Card key={card._id} project={card.project} text={card.text} points={card.points} />
             );
         });
         return (

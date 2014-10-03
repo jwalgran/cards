@@ -1,7 +1,30 @@
 var PouchDB = require('pouchdb');
 var EventEmitter = require('events').EventEmitter;
+var Promise = require('lie');
 var util = require('util');
 var _ = require('lodash');
+var slug = require('slug');
+
+slug.defaults = slug.defaults = {
+    replacement: '',      // replace spaces with replacement
+    symbols: true,         // replace unicode symbols or not
+    remove: null,          // (optional) regex to remove characters
+    charmap: slug.charmap, // replace special characters
+    multicharmap: slug.multicharmap // replace multi-characters
+};
+
+function idSegment(string) {
+    return slug(string).toLowerCase();
+}
+
+function idFromSegments(segments) {
+    var mapOver = arguments.length === 1 ? segments : arguments;
+    return _.map(mapOver, idSegment).join('_');
+}
+
+function nowString() {
+    return new Date().getTime().toString();
+}
 
 var Database = function(localName, remoteDb, syncOptions) {
     EventEmitter.call(this);
@@ -10,9 +33,9 @@ var Database = function(localName, remoteDb, syncOptions) {
 
     var models = {
         card: {
-            idPrefix: 'card_',
+            idPrefix: 'card',
             generateId: function(_) {
-                return this.idPrefix + new Date().getTime().toString();
+                return idFromSegments(this.idPrefix, nowString());
             },
             validate: function (card) {
                 if (!card) {
@@ -32,32 +55,30 @@ var Database = function(localName, remoteDb, syncOptions) {
                 }
                 return undefined; // No validation failure messages
             }
-        }
-    };
+        },
 
-    function allDocsAsArray(opts, cb, eb) {
-        var defaults = {
-            descending: true,
-            include_docs: true
-        };
-        pouch.allDocs(_.extend(defaults, opts), function(err, results) {
-            if (!err) {
-                cb(_.map(results.rows, function(row) {
-                    return row.doc;
-                }));
-            } else {
-                eb(err);
+        project: {
+            idPrefix: 'project',
+            generateId: function(data) {
+                return idFromSegments(this.idPrefix, data.team,
+                    data.group, data.name);
+            },
+            validate: function(project) {
+                if (!project) {
+                    return { project: 'Falsy project' };
+                };
+                if (!project.name) {
+                    return { name: 'Missing text' };
+                };
+                if (!project.team) {
+                    return { group: 'Missing team' };
+                };
+                if (!project.group) {
+                    return { group: 'Missing group' };
+                };
+                return undefined; // No validation failure messages
             }
-        });
-    };
-
-    function allCardsAsArray(cb, eb) {
-        allDocsAsArray({
-            // Reverse keys because descending: true
-            startkey: models.card.idPrefix + '\uffff',
-            endkey: models.card.idPrefix,
-            descending: true
-        }, cb, eb);
+        }
     };
 
     if (remoteDb) {
@@ -71,27 +92,15 @@ var Database = function(localName, remoteDb, syncOptions) {
             since: info.update_seq,
             live: true
         }).on('change', function() {
-            allCardsAsArray(
-                function(docs) {
-                    self.emit('update', docs);
-                },
-                function(err) {
+            self.allDocs(function(err, data) {
+                if (err) {
                     self.emit('error', err);
+                } else {
+                    self.emit('update', data);
                 }
-            );
+            });
         });
     });
-
-    self.allCards = function(cb) {
-        allCardsAsArray(
-            function(docs) {
-                cb(null, docs);
-            },
-            function(err) {
-                cb(err, null);
-            }
-        );
-    };
 
     self._add = function(model, data, cb) {
         // TODO: Generate an ID that includes the project name
@@ -112,9 +121,34 @@ var Database = function(localName, remoteDb, syncOptions) {
     };
 
     self.addCard = _.partial(self._add, models.card);
+    self.addProject = _.partial(self._add, models.project);
 
     self.destroy = function() {
         pouch.destroy();
+    };
+
+    self.allDocs = function(cb) {
+        var cp = pouch.allDocs({
+            descending: true,
+            include_docs: true,
+            startkey: models.card.idPrefix + '_\uffff',
+            endkey: models.card.idPrefix + '_'
+        });
+        var pp = pouch.allDocs({
+            include_docs: true,
+            startkey: models.project.idPrefix + '_',
+            endkey: models.project.idPrefix + '_\uffff'
+        });
+        Promise.all([cp, pp]).then(function(results) {
+            cb(null, {
+                cards: _.map(results[0].rows, function(row) {
+                    return row.doc;
+                }),
+                projects: _.map(results[1].rows, function(row) {
+                    return row.doc;
+                })
+            });            
+        });
     };
 
     return self;

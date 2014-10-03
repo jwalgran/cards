@@ -9,9 +9,11 @@
   "author": "Justin Walgran",
   "license": "MIT",
   "dependencies": {
+    "lie": "^2.8.0",
     "lodash": "^2.4.1",
     "pouchdb": "^3.0.6",
-    "react": "^0.11.2"
+    "react": "^0.11.2",
+    "slug": "^0.7.1"
   },
   "devDependencies": {
     "browserify": "^5.12.1",
