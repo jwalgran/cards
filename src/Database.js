@@ -71,7 +71,7 @@ var Database = function(localName, remoteDb, syncOptions) {
                     return { name: 'Missing text' };
                 };
                 if (!project.team) {
-                    return { group: 'Missing team' };
+                    return { team: 'Missing team' };
                 };
                 if (!project.group) {
                     return { group: 'Missing group' };
