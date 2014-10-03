@@ -3,83 +3,13 @@ var EventEmitter = require('events').EventEmitter;
 var Promise = require('lie');
 var util = require('util');
 var _ = require('lodash');
-var slug = require('slug');
 
-slug.defaults = slug.defaults = {
-    replacement: '',      // replace spaces with replacement
-    symbols: true,         // replace unicode symbols or not
-    remove: null,          // (optional) regex to remove characters
-    charmap: slug.charmap, // replace special characters
-    multicharmap: slug.multicharmap // replace multi-characters
-};
-
-function idSegment(string) {
-    return slug(string).toLowerCase();
-}
-
-function idFromSegments(segments) {
-    var mapOver = arguments.length === 1 ? segments : arguments;
-    return _.map(mapOver, idSegment).join('_');
-}
-
-function nowString() {
-    return new Date().getTime().toString();
-}
+var models = require('./models');
 
 var Database = function(localName, remoteDb, syncOptions) {
     EventEmitter.call(this);
     var self = this;
     var pouch = new PouchDB(localName);
-
-    var models = {
-        card: {
-            idPrefix: 'card',
-            generateId: function(_) {
-                return idFromSegments(this.idPrefix, nowString());
-            },
-            validate: function (card) {
-                if (!card) {
-                    return { card: 'Falsy card' };
-                };
-                if (!card.text) {
-                    return { text: 'Missing text' };
-                }
-                if (card.text.trim && !card.text.trim()) {
-                    return { text: 'Empty text' };
-                }
-                if (card.points === undefined) {
-                    return { points: 'Missing points' };
-                }
-                if (isNaN(card.points)) {
-                    return { points: 'Points is not a number' };
-                }
-                return undefined; // No validation failure messages
-            }
-        },
-
-        project: {
-            idPrefix: 'project',
-            generateId: function(data) {
-                return idFromSegments(this.idPrefix, data.team,
-                    data.group, data.name);
-            },
-            validate: function(project) {
-                if (!project) {
-                    return { project: 'Falsy project' };
-                };
-                if (!project.name) {
-                    return { name: 'Missing text' };
-                };
-                if (!project.team) {
-                    return { team: 'Missing team' };
-                };
-                if (!project.group) {
-                    return { group: 'Missing group' };
-                };
-                return undefined; // No validation failure messages
-            }
-        }
-    };
 
     if (remoteDb) {
         var opts = syncOptions ||  { live: true };
@@ -120,8 +50,11 @@ var Database = function(localName, remoteDb, syncOptions) {
         });
     };
 
-    self.addCard = _.partial(self._add, models.card);
-    self.addProject = _.partial(self._add, models.project);
+    // Dynamically create an 'add' method for each model.
+    _.each(models, function(model, modelName) {
+        var addFunctionName = 'add' + modelName.charAt(0).toUpperCase() + modelName.slice(1);
+        self[addFunctionName] = _.partial(self._add, model);
+    });
 
     self.destroy = function() {
         pouch.destroy();
