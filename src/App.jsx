@@ -7,6 +7,7 @@ var DatabaseDestroyer = require('./DatabaseDestroyer.jsx');
 var ProjectList = require('./ProjectList.jsx');
 var PersonList = require('./PersonList.jsx');
 var PersonForm = require('./PersonForm.jsx');
+var Sprint = require('./Sprint.jsx');
 
 var App = React.createClass({
     getInitialState: function() {
@@ -14,6 +15,34 @@ var App = React.createClass({
             cards: [],
             projects: [],
             people: [],
+            // Hardcoded sprint for testing
+            sprint: {
+                startDate: '2014-09-26',
+                endDate: '2014-10-09',
+                planningVelocity: 1.5,
+                days: 9.5,
+                contributors: {
+                    j: 0.8,
+                    c: 0.8,
+                    ma: 1.0,
+                    s: 1.0,
+                    l: 1.0,
+                    mi: 1.0,
+                    r: 1.0,
+                    k: 1.0
+                },
+                status: 'active',
+                team: 'civicapps',
+                unavailableTime: {
+                    research: {
+                        j: 1,
+                        mi: 1,
+                        s: 1
+                    },
+                    sick: 1.5,
+                    holiday: "World Vegitarian Day"
+                }
+            },
             drafts: {
                 card: { project: '', text: '', points: '' },
                 project: { name: '', team: '', group: '' },
@@ -111,6 +140,13 @@ var App = React.createClass({
     render: function() {
         return (
             <div>
+                <Sprint startDate={this.state.sprint.startDate}
+                        endDate={this.state.sprint.endDate}
+                        planningVelocity={this.state.sprint.planningVelocity}
+                        days={this.state.sprint.days}
+                        contributors={this.state.sprint.contributors}
+                        unavailableTime={this.state.sprint.unavailableTime}
+                />
                 <CardList data={this.state.cards}
                           projects={this.state.projects} />
                 <CardForm draft={this.state.drafts.card}
