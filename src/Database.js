@@ -3,6 +3,7 @@ var EventEmitter = require('events').EventEmitter;
 var Promise = require('lie');
 var util = require('util');
 var _ = require('lodash');
+var pluralize = require('pluralize');
 
 var models = require('./models');
 
@@ -61,26 +62,21 @@ var Database = function(localName, remoteDb, syncOptions) {
     };
 
     self.allDocs = function(cb) {
-        var cp = pouch.allDocs({
-            descending: true,
-            include_docs: true,
-            startkey: models.card.idPrefix + '_\uffff',
-            endkey: models.card.idPrefix + '_'
+        var names = _.keys(models);
+        var promises = _.map(names, function(name) {
+            return pouch.allDocs({
+                include_docs: true,
+                startkey: models[name].idPrefix + '_',
+                endkey: models[name].idPrefix + '_\uffff'
+            });
         });
-        var pp = pouch.allDocs({
-            include_docs: true,
-            startkey: models.project.idPrefix + '_',
-            endkey: models.project.idPrefix + '_\uffff'
-        });
-        Promise.all([cp, pp]).then(function(results) {
-            cb(null, {
-                cards: _.map(results[0].rows, function(row) {
-                    return row.doc;
-                }),
-                projects: _.map(results[1].rows, function(row) {
-                    return row.doc;
-                })
-            });            
+        Promise.all(promises).then(function(results) {
+            cb(null, _.reduce(_.zipObject(names, results),
+                function(obj, result, name) {
+                    obj[pluralize(name)] = _.map(result.rows, 'doc');
+                    return obj;
+                }, {})
+            );
         });
     };
 
