@@ -30,7 +30,7 @@ var App = React.createClass({
 
     createCard: function(project, text, points) {
         this.updateDraftCard(project, text, points);
-        this.props.db.addCard({project: project, text: text, points: points}, function(err) {
+        this.props.db.createCard({project: project, text: text, points: points}, function(err) {
             if (!err) {
                 this.updateDraftCard();
             }
@@ -39,7 +39,7 @@ var App = React.createClass({
 
     createProject: function(name, team, group) {
         this.updateDraftProject(name, team, group);
-        this.props.db.addProject({name: name, team: team, group: group}, function(err){
+        this.props.db.createProject({name: name, team: team, group: group}, function(err){
             if (!err) {
                 this.updateDraftProject();
             }

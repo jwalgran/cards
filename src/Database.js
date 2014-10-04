@@ -32,7 +32,7 @@ var Database = function(localName, remoteDb, syncOptions) {
         });
     });
 
-    self._add = function(model, data, cb) {
+    self._create = function(model, data, cb) {
         // TODO: Generate an ID that includes the project name
         // so that the allDocs index can be used for filtering
         // by project..
@@ -50,10 +50,10 @@ var Database = function(localName, remoteDb, syncOptions) {
         });
     };
 
-    // Dynamically create an 'add' method for each model.
+    // Dynamically create an 'create' method for each model.
     _.each(models, function(model, modelName) {
-        var addFunctionName = 'add' + modelName.charAt(0).toUpperCase() + modelName.slice(1);
-        self[addFunctionName] = _.partial(self._add, model);
+        var createFunctionName = 'create' + modelName.charAt(0).toUpperCase() + modelName.slice(1);
+        self[createFunctionName] = _.partial(self._create, model);
     });
 
     self.destroy = function() {
