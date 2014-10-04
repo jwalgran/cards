@@ -5,5 +5,6 @@
  */
 module.exports = {
     card: require('./models/card'),
-    project: require('./models/project')
+    project: require('./models/project'),
+    person: require('./models/person')
 };

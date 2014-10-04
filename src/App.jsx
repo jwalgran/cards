@@ -5,15 +5,19 @@ var CardForm = require('./CardForm.jsx');
 var ProjectForm = require('./ProjectForm.jsx');
 var DatabaseDestroyer = require('./DatabaseDestroyer.jsx');
 var ProjectList = require('./ProjectList.jsx');
+var PersonList = require('./PersonList.jsx');
+var PersonForm = require('./PersonForm.jsx');
 
 var App = React.createClass({
     getInitialState: function() {
         return {
             cards: [],
             projects: [],
+            people: [],
             drafts: {
                 card: { project: '', text: '', points: '' },
-                project: { name: '', team: '', group: '' }
+                project: { name: '', team: '', group: '' },
+                person: { username: '', name: '' }
             }
         };
     },
@@ -42,6 +46,15 @@ var App = React.createClass({
         this.props.db.createProject({name: name, team: team, group: group}, function(err){
             if (!err) {
                 this.updateDraftProject();
+            }
+        }.bind(this));
+    },
+
+    createPerson: function(username, name) {
+        this.updateDraftPerson(username, name);
+        this.props.db.createPerson({username: username, name: name }, function(err){
+            if (!err) {
+                this.updateDraftPerson();
             }
         }.bind(this));
     },
@@ -77,6 +90,20 @@ var App = React.createClass({
         this.setState(_.extend(this.state, { drafts: newDrafts } ));
     },
 
+    updateDraftPerson: function(username, name) {
+        // React will only update the DOM value if it is an empty
+        // string, not null or undefined;
+        username = username || '';
+        name = name || '';
+        var newDrafts = _.extend(this.state.drafts, {
+            person: {
+                username: username,
+                name: name
+            }
+        });
+        this.setState(_.extend(this.state, { drafts: newDrafts } ));
+    },
+
     destroyLocalDatabase: function() {
         this.props.db.destroy();
     },
@@ -94,6 +121,10 @@ var App = React.createClass({
                 <ProjectForm draft={this.state.drafts.project}
                              onChange={this.updateDraftProject}
                              onSubmit={this.createProject} />
+                <PersonList data={this.state.people} />
+                <PersonForm draft={this.state.drafts.person}
+                             onChange={this.updateDraftPerson}
+                             onSubmit={this.createPerson} />
                 <DatabaseDestroyer
                     onSubmit={this.destroyLocalDatabase} />
             </div>
