@@ -39,9 +39,12 @@ function dateToSegment(date) {
 module.exports = {
     idPrefix: 'sprint',
     generateId: function(data) {
+        // Neat key trick. Putting the endDate first allows you to run
+        // allDocs query with the current YYYYMMDD and find the
+        // current sprint.
         return U.idFromSegments(this.idPrefix, data.team,
-            dateToSegment(data.startDate),
-            dateToSegment(data.endDate));
+            dateToSegment(data.endDate),
+            dateToSegment(data.startDate));
     },
     validate: function (sprint) {
         if (!sprint) {
@@ -65,6 +68,18 @@ module.exports = {
                      + ' format: ' + dateFormat };
         }
         return undefined; // No validation failure messages
+    },
+    queries: {
+        currentForTeam: {
+            optGenerator: function(team) {
+                return {
+                    startkey: 'sprint_' + team + '_' +
+                        moment().format('YYYYMMDD'),
+                    endkey: 'sprint_' + team + '_\uffff',
+                    limit: 1
+                };
+            }
+        }
     },
     dateFormat: dateFormat
 };

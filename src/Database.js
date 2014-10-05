@@ -55,6 +55,26 @@ var Database = function(localName, remoteDb, syncOptions) {
     _.each(models, function(model, modelName) {
         var createFunctionName = 'create' + modelName.charAt(0).toUpperCase() + modelName.slice(1);
         self[createFunctionName] = _.partial(self._create, model);
+
+        if (model.queries) {
+            _.each(model.queries, function(queryDef, queryName) {
+                self[modelName] = self[modelName] || {};
+                self[modelName][queryName] = function() {
+                    var args = Array.prototype.slice.call(arguments);
+                    var cb = args.pop();
+                    var qOpts = queryDef.optGenerator.apply(null, args);
+                    pouch.allDocs(
+                        _.extend({include_docs: true}, qOpts)
+                    ).then(function(result) {
+                        var docs = _.map(result.rows, 'doc');
+                        if (qOpts.limit && qOpts.limit === 1) {
+                            docs = docs.length ? docs[0] : null;
+                        }
+                        cb(null, docs);
+                    });
+                };
+            });
+        }
     });
 
     self.destroy = function() {

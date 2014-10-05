@@ -16,33 +16,7 @@ var App = React.createClass({
             projects: [],
             people: [],
             // Hardcoded sprint for testing
-            sprint: {
-                startDate: '2014-09-26',
-                endDate: '2014-10-09',
-                planningVelocity: 1.5,
-                days: 9.5,
-                contributors: {
-                    j: 0.8,
-                    c: 0.8,
-                    ma: 1.0,
-                    s: 1.0,
-                    l: 1.0,
-                    mi: 1.0,
-                    r: 1.0,
-                    k: 1.0
-                },
-                status: 'active',
-                team: 'civicapps',
-                unavailableTime: {
-                    research: {
-                        j: 1,
-                        mi: 1,
-                        s: 1
-                    },
-                    sick: 1.5,
-                    holiday: "World Vegitarian Day"
-                }
-            },
+            sprint: {},
             drafts: {
                 card: { project: '', text: '', points: '' },
                 project: { name: '', team: '', group: '' },
@@ -51,13 +25,29 @@ var App = React.createClass({
         };
     },
 
+    getCurrentSprintForTeam: function(team) {
+        this.props.db.sprint.currentForTeam(team,
+            function(err, sprint) {
+                if (!err) {
+                    this.setState(_.extend(this.state, {sprint: sprint}));
+                } else {
+                    console.log(err);
+                    this.setState(_.extend(this.state, {sprint: {}}));
+                }
+            }.bind(this));
+    },
+
     componentDidMount: function() {
         this.props.db.allDocs(function(err, data) {
             this.setState(data);
         }.bind(this));
 
+        //TODO: Remove hardcoded team
+        this.getCurrentSprintForTeam('civicapps');
+
         this.props.db.on('update', function(data) {
             this.setState(data);
+            this.getCurrentSprintForTeam('civicapps');
         }.bind(this));
     },
 
