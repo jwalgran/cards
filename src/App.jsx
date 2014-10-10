@@ -15,8 +15,8 @@ var App = React.createClass({
             cards: [],
             projects: [],
             people: [],
-            // Hardcoded sprint for testing
             sprint: {},
+            sprints: [],
             drafts: {
                 card: { project: '', text: '', points: '' },
                 project: { name: '', team: '', group: '' },
