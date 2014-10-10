@@ -29,7 +29,8 @@ var App = React.createClass({
         this.props.db.sprint.currentForTeam(team,
             function(err, sprint) {
                 if (!err) {
-                    this.setState(_.extend(this.state, {sprint: sprint}));
+                    this.setState(_.extend(this.state,
+                        {sprint: sprint || {}}));
                 } else {
                     console.log(err);
                     this.setState(_.extend(this.state, {sprint: {}}));
