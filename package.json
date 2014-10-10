@@ -4,6 +4,10 @@
   "description": "Task management for software development sprints",
   "main": "",
   "scripts": {
+    "build": "gulp",
+    "server": "gulp serve",
+    "live": "gulp live",
+    "undead": "until gulp live; do echo \"'gulp live' crashed with exit code $?.  Respawning..\" >&2; sleep 1; done",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
   "author": "Justin Walgran",
