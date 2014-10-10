@@ -39,7 +39,7 @@ var App = React.createClass({
 
     componentDidMount: function() {
         this.props.db.allDocs(function(err, data) {
-            this.setState(data);
+            this.setState(_.extend(this.state, data));
         }.bind(this));
 
         //TODO: Remove hardcoded team
