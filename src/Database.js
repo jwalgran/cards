@@ -7,6 +7,29 @@ var pluralize = require('pluralize');
 
 var models = require('./models');
 
+function buildDesignDoc(name, mapFunction) {
+    var ddoc = {
+        _id: '_design/' + name,
+        views: {
+        }
+    };
+    ddoc.views[name] = { map: mapFunction.toString() };
+    return ddoc;
+}
+
+function overwriteDesignDoc(pouch, newDoc, name) {
+    pouch.put(newDoc);
+    pouch.get(newDoc._id).then(function (oldDoc) {
+        return pouch.remove(oldDoc);
+    }).then(function() {
+        return pouch.put(newDoc);
+    }).then(function() {
+        // Query the index to make sure it is up to date.
+        // CouchDB/PouchDB indexes update on read, not write.
+        return pouch.query(name, {stale: 'update_after'});
+    });
+};
+
 var Database = function(localName, remoteDb, syncOptions) {
     EventEmitter.call(this);
     var self = this;
@@ -56,22 +79,35 @@ var Database = function(localName, remoteDb, syncOptions) {
         var createFunctionName = 'create' + modelName.charAt(0).toUpperCase() + modelName.slice(1);
         self[createFunctionName] = _.partial(self._create, model);
 
+        // Add design documents for views
+        if (model.views) {
+            _.each(model.views, function(viewFn, viewName) {
+                var ddoc = buildDesignDoc(viewName, viewFn);
+                overwriteDesignDoc(pouch, ddoc, viewName);
+            });
+        }
+
+        // Append allDocs query functions defined in the models
         if (model.queries) {
             _.each(model.queries, function(queryDef, queryName) {
                 self[modelName] = self[modelName] || {};
                 self[modelName][queryName] = function() {
                     var args = Array.prototype.slice.call(arguments);
                     var cb = args.pop();
-                    var qOpts = queryDef.optGenerator.apply(null, args);
-                    pouch.allDocs(
-                        _.extend({include_docs: true}, qOpts)
-                    ).then(function(result) {
+                    var generatedOpts = queryDef.optGenerator.apply(null, args);
+                    var opts = _.extend({include_docs: true}, generatedOpts);
+                    var resultHandler = function(result) {
                         var docs = _.map(result.rows, 'doc');
-                        if (qOpts.limit && qOpts.limit === 1) {
+                        if (generatedOpts.limit && generatedOpts.limit === 1) {
                             docs = docs.length ? docs[0] : null;
                         }
                         cb(null, docs);
-                    });
+                    };
+                    if (queryDef.view) {
+                        pouch.query(queryDef.view, opts).then(resultHandler);
+                    } else {
+                        pouch.allDocs(opts).then(resultHandler);
+                    }
                 };
             });
         }

@@ -22,5 +22,14 @@ module.exports = {
 
     nowString: function() {
         return new Date().getTime().toString();
+    },
+
+
+    id: function(o) {
+        if (_.isObject(o)) {
+            return o._id;
+        } else {
+            return o;
+        }
     }
 };

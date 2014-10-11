@@ -69,6 +69,16 @@ module.exports = {
         }
         return undefined; // No validation failure messages
     },
+    views: {
+        'card_status': function(doc) {
+            var key = [];
+            if (doc._id.substr(0, 5) === 'card_') {
+                key.push(doc.sprint ? doc.sprint : null);
+                key.push(doc.status ? doc.status : 'open');
+                emit(key);
+            }
+        }
+    },
     queries: {
         currentForTeam: {
             optGenerator: function(team) {
@@ -77,6 +87,15 @@ module.exports = {
                         moment().format('YYYYMMDD'),
                     endkey: 'sprint_' + team + '_\uffff',
                     limit: 1
+                };
+            }
+        },
+        cardsInSprint: {
+            view: 'card_status',
+            optGenerator: function(sprint) {
+                return {
+                    startkey: [U.id(sprint)],
+                    endkey: [U.id(sprint), {}]
                 };
             }
         }
