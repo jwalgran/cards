@@ -74,8 +74,8 @@ var Database = function(localName, remoteDb, syncOptions) {
         });
     };
 
-    // Dynamically create an 'create' method for each model.
     _.each(models, function(model, modelName) {
+        // Dynamically create an 'create' method for each model.
         var createFunctionName = 'create' + modelName.charAt(0).toUpperCase() + modelName.slice(1);
         self[createFunctionName] = _.partial(self._create, model);
 
@@ -109,6 +109,14 @@ var Database = function(localName, remoteDb, syncOptions) {
                         pouch.allDocs(opts).then(resultHandler);
                     }
                 };
+            });
+        }
+
+        // Append actions defined in the models
+        if (model.actions) {
+            _.each(model.actions, function(action, actionName) {
+                self[modelName] = self[modelName] || {};
+                self[modelName][actionName] = _.partial(action, pouch);
             });
         }
     });

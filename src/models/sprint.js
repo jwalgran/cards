@@ -100,5 +100,19 @@ module.exports = {
             }
         }
     },
+    actions: {
+        addCardToSprint: function(pouch, cardId, sprintId) {
+            return pouch.get(cardId).then(function (card) {
+                card.sprint = sprintId;
+                return pouch.put(card);
+            });
+        },
+        removeCardFromSprint: function(pouch, cardId) {
+            return pouch.get(cardId).then(function (card) {
+                delete card.sprint;
+                return pouch.put(card);
+            });
+        }
+    },
     dateFormat: dateFormat
 };

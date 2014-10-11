@@ -128,6 +128,16 @@ var App = React.createClass({
         this.props.db.destroy();
     },
 
+    addCardToSprint: function(card) {
+        if (this.state.sprint) {
+            this.props.db.sprint.addCardToSprint(card._id, this.state.sprint._id);
+        }
+    },
+
+    removeCardFromSprint: function(card) {
+        this.props.db.sprint.removeCardFromSprint(card._id);
+    },
+
     render: function() {
         return (
             <div>
@@ -139,7 +149,10 @@ var App = React.createClass({
                         unavailableTime={this.state.sprint.unavailableTime}
                 />
                 <CardList data={this.state.cards}
-                          projects={this.state.projects} />
+                          projects={this.state.projects}
+                          addToSprint={this.addCardToSprint}
+                          removeFromSprint={this.removeCardFromSprint}
+                          sprint={this.state.sprint} />
                 <CardForm draft={this.state.drafts.card}
                           projects={this.state.projects}
                           onChange={this.updateDraftCard}
