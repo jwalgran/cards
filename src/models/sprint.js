@@ -3,6 +3,18 @@
 {
     startDate: YYYY-MM-DD,
     endDate: YYYY-MM-DD,
+    plannedCards: [
+      { id: cardId, points: Number },
+      { id: cardId, points: Number }
+    ],
+    swappedOutCards: [
+      { id: cardId, points: Number },
+      { id: cardId, pinrts: Number }
+    ],
+    swappedInCards: [
+      { id: cardId, points: Number },
+      { id: cardId, points: Number }
+    ],
     planningVelocity: Number,
     days: Number,
     contributors: {
