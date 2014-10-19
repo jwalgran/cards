@@ -130,12 +130,12 @@ var App = React.createClass({
 
     addCardToSprint: function(card) {
         if (this.state.sprint) {
-            this.props.db.sprint.addCardToSprint(card._id, this.state.sprint._id);
+            this.props.db.sprint.addCardToSprint(card, this.state.sprint);
         }
     },
 
     removeCardFromSprint: function(card) {
-        this.props.db.sprint.removeCardFromSprint(card._id);
+        this.props.db.sprint.removeCardFromSprint(card);
     },
 
     render: function() {

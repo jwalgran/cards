@@ -113,14 +113,16 @@ module.exports = {
         }
     },
     actions: {
-        addCardToSprint: function(pouch, cardId, sprintId) {
+        addCardToSprint: function(pouch, card, sprint) {
+            var cardId = U.id(card),
+                sprintId = U.id(sprint);
             return pouch.get(cardId).then(function (card) {
                 card.sprint = sprintId;
                 return pouch.put(card);
             });
         },
-        removeCardFromSprint: function(pouch, cardId) {
-            return pouch.get(cardId).then(function (card) {
+        removeCardFromSprint: function(pouch, card) {
+            return pouch.get(U.id(card)).then(function (card) {
                 delete card.sprint;
                 return pouch.put(card);
             });
