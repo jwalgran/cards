@@ -6,4 +6,4 @@ var Database = require('./Database.js');
 
 //TODO: PUT THE 'var' BACK
 db = new Database(config.localDb, config.serverDb);
-React.renderComponent(App({db: db}), document.getElementById('content'));
+React.renderComponent(App({db: db}), document.getElementById('container'));

@@ -8,6 +8,7 @@ var ProjectList = require('./ProjectList.jsx');
 var PersonList = require('./PersonList.jsx');
 var PersonForm = require('./PersonForm.jsx');
 var Sprint = require('./Sprint.jsx');
+var SideMenu = require('./SideMenu.jsx');
 
 var App = React.createClass({
     getInitialState: function() {
@@ -21,7 +22,8 @@ var App = React.createClass({
                 card: { project: '', text: '', points: '' },
                 project: { name: '', team: '', group: '' },
                 person: { username: '', name: '' }
-            }
+            },
+            page: 'Sprints'
         };
     },
 
@@ -138,35 +140,63 @@ var App = React.createClass({
         this.props.db.sprint.removeCardFromSprint(card);
     },
 
+    selectMenuOption: function(option) {
+        this.setState(_.extend(this.state, {page: option}));
+    },
+
     render: function() {
+        var pages = ['Sprints', 'Projects', 'People', 'Teams', 'Settings'];
+        var activeComponents;
+        if (this.state.page === 'Sprints') {
+            activeComponents = [
+                    <Sprint key="sprint"
+                            startDate={this.state.sprint.startDate}
+                            endDate={this.state.sprint.endDate}
+                            planningVelocity={this.state.sprint.planningVelocity}
+                            days={this.state.sprint.days}
+                            contributors={this.state.sprint.contributors}
+                            unavailableTime={this.state.sprint.unavailableTime}/>,
+                    <CardList key="cardlist"
+                              data={this.state.cards}
+                              projects={this.state.projects}
+                              addToSprint={this.addCardToSprint}
+                              removeFromSprint={this.removeCardFromSprint}
+                              sprint={this.state.sprint} />,
+                    <CardForm key="cardform"
+                              draft={this.state.drafts.card}
+                              projects={this.state.projects}
+                              onChange={this.updateDraftCard}
+                              onSubmit={this.createCard} />
+            ];
+        } else if (this.state.page === 'Projects') {
+            activeComponents = [
+                <ProjectList key="projectlist" data={this.state.projects} />,
+                <ProjectForm key="projectform" draft={this.state.drafts.project}
+                                     onChange={this.updateDraftProject}
+                                     onSubmit={this.createProject} />];
+        } else if (this.state.page === 'People') {
+            activeComponents = [
+                <PersonList key="personlist" data={this.state.people} />,
+                <PersonForm key="personform" draft={this.state.drafts.person}
+                                     onChange={this.updateDraftPerson}
+                                     onSubmit={this.createPerson} />];
+        } else if (this.state.page === 'Settings') {
+            activeComponents = [<DatabaseDestroyer key="databasedestroyer" onSubmit={this.destroyLocalDatabase} />];
+        };
+
         return (
-            <div>
-                <Sprint startDate={this.state.sprint.startDate}
-                        endDate={this.state.sprint.endDate}
-                        planningVelocity={this.state.sprint.planningVelocity}
-                        days={this.state.sprint.days}
-                        contributors={this.state.sprint.contributors}
-                        unavailableTime={this.state.sprint.unavailableTime}
-                />
-                <CardList data={this.state.cards}
-                          projects={this.state.projects}
-                          addToSprint={this.addCardToSprint}
-                          removeFromSprint={this.removeCardFromSprint}
-                          sprint={this.state.sprint} />
-                <CardForm draft={this.state.drafts.card}
-                          projects={this.state.projects}
-                          onChange={this.updateDraftCard}
-                          onSubmit={this.createCard} />
-                <ProjectList data={this.state.projects} />
-                <ProjectForm draft={this.state.drafts.project}
-                             onChange={this.updateDraftProject}
-                             onSubmit={this.createProject} />
-                <PersonList data={this.state.people} />
-                <PersonForm draft={this.state.drafts.person}
-                             onChange={this.updateDraftPerson}
-                             onSubmit={this.createPerson} />
-                <DatabaseDestroyer
-                    onSubmit={this.destroyLocalDatabase} />
+            <div className="layout">
+                <a href="#menu" id="menuLink" className="menu-link">
+                    <span/>
+                </a>
+                <SideMenu selected={this.state.page}
+                          items={pages}
+                          action={this.selectMenuOption} />
+                <div id="main">
+                    <div className="content">
+                        {activeComponents}
+                    </div>
+                </div>
             </div>
         );
     }

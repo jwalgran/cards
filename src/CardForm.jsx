@@ -35,19 +35,22 @@ var CardForm = React.createClass({
             return <option className='card-project' key={project._id} value={project._id}>{project.name}</option>;
         });
         return (
-            <form className="card-form" onSubmit={this.handleSubmit}>
-                <select className="card-projects" ref="project" onChange={this.handleChange}>{projects}</select>
-                <input type="text"
-                       placeholder="Describe the task..."
-                       value={this.props.draft.text}
-                       ref="text"
-                       onChange={this.handleChange} />
-                <input type="text"
-                       placeholder="points..."
-                       value={this.props.draft.points}
-                       ref="points"
-                       onChange={this.handleChange}/>
-                <input type="submit" value="Add To The Backlog" />
+            <form className="card-form pure-form" onSubmit={this.handleSubmit}>
+                <fieldset>
+                    <legend>Add a card</legend>
+                    <select className="card-projects" ref="project" onChange={this.handleChange}>{projects}</select>
+                    <input type="text"
+                           placeholder="Describe the task..."
+                           value={this.props.draft.text}
+                           ref="text"
+                           onChange={this.handleChange} />
+                    <input type="text"
+                           placeholder="points..."
+                           value={this.props.draft.points}
+                           ref="points"
+                           onChange={this.handleChange}/>
+                    <input type="submit" className="pure-button pure-button-primary" value="Add To The Backlog" />
+                </fieldset>
             </form>
         );
     }

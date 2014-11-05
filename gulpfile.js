@@ -25,10 +25,14 @@ gulp.task('browserify', function() {
 });
 
 var staticMarkup = './src/*.html';
+var staticCss = './src/css/**/*';
 
 gulp.task('static', function () {
     gulp.src(staticMarkup)
         .pipe(gulp.dest('./dist'));
+
+    gulp.src(staticCss)
+        .pipe(gulp.dest('./dist/css'));
 });
 
 var jsSrcPaths = [
