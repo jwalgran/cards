@@ -9,6 +9,7 @@ var PersonList = require('./PersonList.jsx');
 var PersonForm = require('./PersonForm.jsx');
 var Sprint = require('./Sprint.jsx');
 var SideMenu = require('./SideMenu.jsx');
+var SideMenuLink = require('./SideMenuLink.jsx');
 
 var App = React.createClass({
     getInitialState: function() {
@@ -185,10 +186,8 @@ var App = React.createClass({
         };
 
         return (
-            <div className="layout">
-                <a href="#menu" id="menuLink" className="menu-link">
-                    <span/>
-                </a>
+            <div id="layout" className="layout">
+                <SideMenuLink />
                 <SideMenu selected={this.state.page}
                           items={pages}
                           action={this.selectMenuOption} />
